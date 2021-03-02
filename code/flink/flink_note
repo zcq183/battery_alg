@@ -1,0 +1,77 @@
+hadoop jar /home/hduser/hadoop-3.1.4/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.4.jar wordcount /input /output
+
+hadoop login 
+su hduser
+
+GW00190598 Zcq123456#
+
+
+一.pyflink setup
+wget https://ci.apache.org/projects/flink/flink-docs-release-1.11/downloads/setup-pyflink-virtual-env.sh
+sh setup-pyflink-virtual-env.sh 1.11.2
+source venv/bin/activate  # 激活虚拟环境 
+
+curl -O https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka_2.11/1.10.0/flink-sql-connector-kafka_2.11-1.10.0.jar $ curl -O ht
+curl -O https://repo1.maven.org/maven2/org/apache/flink/flink-jdbc_2.11/1.10.0/flink-jdbc_2.11-1.10.0.jar 
+curl -O https://repo1.maven.org/maven2/org/apache/flink/flink-csv/1.10.0/flink-csv-1.10.0-sql-jar.jar 
+curl -O https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar 
+
+
+二 .kafka setup and command 
+
+https://blog.csdn.net/u010889616/article/details/80641922
+
+0、配置 
+
+vim config/server.properties
+修改配置文件中21、31、36和60行
+broker.id=1
+listeners=PLAINTEXT://:9092
+advertised.listeners=PLAINTEXT://gw:9092       //gw is hostname
+log.dirs=/home/zhao/software/kafka240/logs
+
+ 
+
+1、启动Zookeeper，Zookeeper部署的是单点的。
+
+bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+
+2、启动Kafka服务，使用 kafka-server-start.sh 启动 kafka 服务
+bin/kafka-server-start.sh config/server.properties
+
+
+3、创建topic 
+使用 kafka-topics.sh 创建单分区单副本的 topic test 
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test 
+
+#bin/kafka-topics.sh --zookeeper 10.53.174.43:2181/kafka --create --replication-factor 1 --partitions 1 --topic flink_test
+
+查看 topic 列表 
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+4、产生消息，创建消息生产者 
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+
+
+
+
+ 5、消费消息，创建消息消费者 
+
+./bin/kafka-console-consumer.sh --bootstrap-server 10.53.174.43:9092 --topic test --from-beginning
+
+#bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test   //old version
+
+6、查看Topic消息 
+bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic test
+ 
+
+
+
+
+四、zookeeper服务器
+启动zookeeper服务器，进入zookeeper/bin目录，执行 ./zkServer.sh start 命令。就可以启动服务器。
+检验服务器命令, ./zkCli.sh -server localhost:2181。可以看到控制台的输出没有报错表示以及启动成功。
+ls /brokers/ids // 查看 brokers
+停止服务器命令，./zkServer.sh stop
+https://blog.csdn.net/wsk1103/article/details/80399115
+
